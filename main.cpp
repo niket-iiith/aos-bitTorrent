@@ -30,3 +30,21 @@ int clientCount = 0;
 pthread_mutex_t lockClient;
 
 
+void setTracker(const char *filename){
+    FILE *file = fopen(filename, "r");
+    if(file == NULL) {
+        perror("Unable to open tracker info file");
+        exit(EXIT_FAILURE);
+    }
+
+    char buffer[32];
+    while(fgets(buffer, sizeof(buffer), file)) {
+        sscanf(buffer, "%s %d", tracker[trackerCount].ip, &tracker[trackerCount].port);
+        trackerCount++;
+    }
+
+    fclose(file);
+}
+
+
+
