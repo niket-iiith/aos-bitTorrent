@@ -18,10 +18,9 @@ typedef struct {
     int port;
 } TrackerInfo;
 
-TrackerInfo trackers[MAX_TRACKERS];  // Trackers list
+TrackerInfo trackers[MAX_TRACKERS]; 
 int tracker_count = 0;
 
-// Load tracker info using open() and read() system calls
 void load_trackers(const char *filename) {
     int fd = open(filename, O_RDONLY);
     if (fd < 0) {
@@ -36,9 +35,8 @@ void load_trackers(const char *filename) {
         close(fd);
         exit(EXIT_FAILURE);
     }
-    buffer[bytes_read] = '\0'; // Null-terminate the string
+    buffer[bytes_read] = '\0';
 
-    // Tokenize the content by lines and load IP and port
     char *line = strtok(buffer, "\n");
     while (line != NULL && tracker_count < MAX_TRACKERS) {
         sscanf(line, "%s %d", trackers[tracker_count].ip, &trackers[tracker_count].port);
@@ -49,7 +47,6 @@ void load_trackers(const char *filename) {
     close(fd);
 }
 
-// Connect to the tracker
 void connect_to_tracker(int tracker_no) {
     int sockfd;
     struct sockaddr_in server_addr;
@@ -71,21 +68,18 @@ void connect_to_tracker(int tracker_no) {
 
     printf("Connected to tracker %d at %s:%d\n", tracker_no, trackers[tracker_no].ip, trackers[tracker_no].port);
 
-    // Infinite loop to send user input as commands
     char command[BUFFER_SIZE];
     while (true) {
         cout << "Enter command: ";
-        cin.getline(command, sizeof(command));  // Get user input
+        cin.getline(command, sizeof(command));  
 
-        // Send the command to the tracker
         send(sockfd, command, strlen(command), 0);
 
-        // Receive response from the tracker
         char buffer[BUFFER_SIZE];
-        memset(buffer, 0, BUFFER_SIZE); // Clear the buffer
+        memset(buffer, 0, BUFFER_SIZE); 
         int bytes_received = recv(sockfd, buffer, sizeof(buffer) - 1, 0);
         if (bytes_received > 0) {
-            buffer[bytes_received] = '\0'; // Null-terminate the string
+            buffer[bytes_received] = '\0'; 
             printf("Received from tracker: %s\n", buffer);
         } else if (bytes_received == 0) {
             printf("Tracker closed the connection\n");
@@ -96,20 +90,17 @@ void connect_to_tracker(int tracker_no) {
     close(sockfd);
 }
 
-// Main client function
 int main(int argc, char *argv[]) {
-    if (argc < 2) {
-        printf("Usage: ./client tracker_info.txt\n");
+    if (argc != 3) {
+        printf("Usage: ./client <IP>:<PORT> tracker_info.txt\n");
         return -1;
     }
 
-    load_trackers(argv[1]);
+    load_trackers(argv[2]);
 
-    // Infinite loop to connect to the tracker
     while (1) {
-        // Connect to the first tracker
         connect_to_tracker(0);
-        sleep(5);  // Sleep before retrying
+        sleep(5);  
     }
 
     return 0;
